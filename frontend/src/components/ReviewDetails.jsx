@@ -50,10 +50,7 @@ const ReviewDetails = () => {
 
     return (
         <div>
-            {/* Render Navbar */}
             <Navbar />
-
-            {/* Render Review Details */}
             <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg">
                 <h2 className="text-3xl font-bold mb-4">{review.reviewTitle}</h2>
                 <p className="text-lg text-gray-700 leading-relaxed mb-6">{review.reviewContent}</p>

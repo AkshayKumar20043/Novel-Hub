@@ -1,11 +1,13 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; 
+import axios from 'axios';
 import Cookies from 'js-cookie'
 import coverImg2 from '../assets/login_signup_cover2.jpg';
-import googleIcon from '../assets/google_icon.jpg';
+import AuthContext from "../context/AuthContext";
+import GoogleSignIn from '../utils/GoogleSignIn';
 
 const LoginPage = () => {
+  const { update } = useContext(AuthContext)
   const navigate = useNavigate(); // For navigation after login
 
   // State for form fields
@@ -22,12 +24,23 @@ const LoginPage = () => {
     setLoading(true);
     setError('');
 
+     // Validate email
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex for valid email
+    const domainPattern = /^[^\d@]+$/; // Domain part should not contain numbers
+
+    if (!emailPattern.test(email) || /^\d+$/.test(email) || !domainPattern.test(email.split('@')[1])) {
+      setError('Invalid email format...');
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await axios.post(`${API_URL}/auth/login`, {
         email,
         password,
       });
-      
+      console.log(response)
+
       // Setting up cookies to store the token
       if (rememberMe) {
         const token = response.data.token;
@@ -40,7 +53,7 @@ const LoginPage = () => {
 
       // Redirect to dashboard or home page
       navigate('/home');
-
+      update();
     } catch (err) {
       console.error('Login failed:', err);
       if (err.response && err.response.data && err.response.data.msg) {
@@ -66,7 +79,7 @@ const LoginPage = () => {
 
       {/* Login Section */}
       <div className='w-full md:w-2/5 h-auto md:h-full bg-[#f5f5f5] flex flex-col p-6 md:p-10 justify-center items-center'>
-        <h1 className='text-2xl md:text-3xl text-[#060606] font-semibold mb-1 mt-10'>Novels Nexus</h1>
+        <h1 className='text-2xl md:text-3xl text-[#060606] font-semibold mb-1 mt-10'>Novel Nexus</h1>
         <h3 className='text-lg md:text-xl mb-1'>Login</h3>
 
         <form className="w-full max-w-[400px] flex flex-col" onSubmit={handleSubmit}>
@@ -75,7 +88,7 @@ const LoginPage = () => {
               {error}
             </div>
           )}
-          
+
           <input
             type="email"
             placeholder="Email"
@@ -95,7 +108,7 @@ const LoginPage = () => {
           />
 
           <div className='w-full flex items-center justify-between my-4'>
-            <div className='flex items-center'>
+            {/* <div className='flex items-center'>
               <input
                 type='checkbox'
                 className='w-4 h-4 mr-2'
@@ -104,7 +117,7 @@ const LoginPage = () => {
               />
               <p className='text-sm'>Remember Me</p>
             </div>
-            {/* <p className='text-sm font-medium cursor-pointer underline'>Forgot Password?</p> */}
+            <p className='text-sm font-medium cursor-pointer underline'>Forgot Password?</p> */}
           </div>
 
           <div className='w-full flex flex-col my-4'>
@@ -130,10 +143,11 @@ const LoginPage = () => {
             <p className='text-lg absolute text-black/80 bg-[#f5f5f5] px-2'>or</p>
           </div>
 
-          <div className='w-full flex items-center justify-center bg-white border border-black/40 rounded-md my-4 p-4 cursor-pointer'>
+          {/* <button className='w-full flex items-center justify-center bg-white border border-black/40 rounded-md my-4 p-4 cursor-pointer' type="button">
             <img src={googleIcon} className='h-6 mr-2' alt="Google Icon" />
             Sign in with Google
-          </div>
+          </button> */}
+          <GoogleSignIn />
         </form>
 
         <div className='w-full flex items-center justify-center mt-6'>

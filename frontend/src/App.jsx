@@ -1,66 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignUpPage';
-import { jwtDecode } from "jwt-decode";
-import Cookies from 'js-cookie';
 import HomePage from './components/HomePage';
 import BookDetails from "./components/BookDetails";
 import ReviewDetails from "./components/ReviewDetails";
+import SearchResults from "./pages/SearchResults";
+import AuthContext from "./context/AuthContext";
+import Chatbot from "./components/Chatbot";
+import Chapters from "./components/Chapters"; // Import the Chapters component
+import ChapterDetail from "./components/ChapterDetail";
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  useEffect(() => {
-    const token = Cookies.get('token');
-
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        console.log('Decoded token:', decoded);
-
-        if (decoded && decoded.exp > Date.now() / 1000) {
-          setIsAuthenticated(true);
-        } else {
-          console.log(decoded.exp)
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.log('Token decoding error:', error);
-        setIsAuthenticated(false);
-      }
-    } else {
-      setIsAuthenticated(false);
-    }
-  }, []);
-
+  const { isAuthenticated } = useContext(AuthContext);
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
+      {isAuthenticated() ? (
+        <Routes>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/novels/:id" element={<BookDetails />} />
+          <Route path="/novels/:novelId/reviews/:reviewId" element={<ReviewDetails />} />
+          <Route path="/novels/:id/chapters" element={<Chapters />} />
+          <Route path="/novels/:novelId/chapters/:chapterId" element={<ChapterDetail />} /> 
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
+        </Routes>
+      ) : (
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
 
-        <Route
-          path="/home"
-          element={
-            isAuthenticated ? <HomePage /> : <Navigate to="/" />
-          }
-        />
-
-        <Route
-          path="/novels/:id"
-          element={
-            isAuthenticated ? <BookDetails /> : <Navigate to="/" />
-          }
-        />
-
-        <Route
-          path="/novels/:novelId/reviews/:reviewId"
-          element={
-            isAuthenticated ? <ReviewDetails /> : <Navigate to="/" />
-          }
-        />
-      </Routes>
+      )}
+    <Chatbot />
     </Router>
   );
 };

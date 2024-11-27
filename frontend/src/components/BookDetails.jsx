@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './Navbar';
-import ReviewDetails from './ReviewDetails';
 
 const BookDetails = () => {
     const { id } = useParams();
@@ -12,9 +11,11 @@ const BookDetails = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const navigate = useNavigate();  // Initialize useNavigate hook
+
     const API_URL = import.meta.env.VITE_API_URL;
     const NOVEL_COVERS_PATH = import.meta.env.VITE_API_NOVELCOVERS_URL;
-
+   
     useEffect(() => {
         const fetchBookDetails = async () => {
             try {
@@ -47,6 +48,11 @@ const BookDetails = () => {
         fetchBookDetails();
     }, [id]);
 
+    const handleReadNowClick = () => {
+        // Navigate to the chapters page for this novel
+        navigate(`/novels/${id}/chapters`);
+    };
+
     if (loading) return <div className="flex justify-center items-center h-screen text-lg">Loading...</div>;
     if (error) return <div className="flex justify-center items-center h-screen text-lg">{error}</div>;
     if (!book) return <div className="flex justify-center items-center h-screen text-lg">Book not found</div>;
@@ -65,7 +71,10 @@ const BookDetails = () => {
                 <div className="lg:w-auto p-1 lg:pl-6">
                     <h1 className="text-5xl font-extrabold py-20 text-gray-900 mb-4">{book.title}</h1>
                     <div className="flex items-center py-20">
-                        <button className="bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-5 rounded-lg mr-4 transition duration-200 ease-in-out">
+                        <button
+                            className="bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-5 rounded-lg mr-4 transition duration-200 ease-in-out"
+                            onClick={handleReadNowClick}  // Trigger the handleReadNowClick function
+                        >
                             Read Now
                         </button>
                         <button className="bg-green-600 hover:bg-green-800 text-white font-semibold py-2 px-5 rounded-lg transition duration-200 ease-in-out">
@@ -88,7 +97,7 @@ const BookDetails = () => {
                         title="Introduction Video"
                     ></iframe>
                 </div>
-                </div>
+            </div>
 
             <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg">
                 <h2 className="text-3xl font-bold mb-4">Reviews</h2>
@@ -96,8 +105,8 @@ const BookDetails = () => {
                     <div className="space-y-4">
                         {reviews.map((review) => (
                             <Link
-                                key={review.id} 
-                                to={`/novels/${book.id}/reviews/${review.id}`} 
+                                key={review.id}
+                                to={`/novels/${book.id}/reviews/${review.id}`}
                                 state={{ novelId: book.id }}
                             >
                                 <div className="p-4 bg-gray-100 rounded-lg shadow-md cursor-pointer hover:bg-gray-200 transition mb-5">
@@ -112,9 +121,7 @@ const BookDetails = () => {
                     <p className="text-lg text-gray-700">No reviews available</p>
                 )}
             </div>
-
         </div>
-
     );
 };
 

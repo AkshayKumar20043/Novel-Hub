@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Post from './Post';
+import Post from '../utils/Post';
 
 function Forum() {
     const [posts, setPosts] = useState([]);
