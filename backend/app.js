@@ -17,14 +17,18 @@ const authRouter = require('./routes/authRotuer');
 const postRouter = require('./routes/postRouter');
 const authorRouter = require('./routes/authorRotuer');
 const novelRouter = require('./routes/novelRouter');
+const gAuthRouter = require('./routes/googleAuthRouter')
+const chatBotRouter = require('./routes/chatBotRouter');
 
 app.use('/api/auth', authRouter);
+app.use('/api/oauth', gAuthRouter);
 app.use('/api/users', userRouter);
 app.use('/api/posts', postRouter);
 app.use('/api/authors', authorRouter);
 app.use('/api/novels', novelRouter);
+app.use('/api/chatbot', chatBotRouter);
 
 // Start server
-app.listen((port),()=>{
-    console.log(`Server running at http://localhost:${port}`);
-  })
+app.listen((port), () => {
+  console.log(`Server running at http://localhost:${port}`);
+})

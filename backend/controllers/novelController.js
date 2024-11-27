@@ -9,52 +9,64 @@ const chaptersFilePath = path.join(__dirname, '..', 'data', 'chapters.json');
 const reviewsFilePath = path.join(__dirname, '..', 'data', 'reviews.json');
 
 const uploadNovel = (req, res) => {
-    const { userId, title, description, introVideo } = req.body;
-
-    if (!userId || !title || !description || !introVideo) {
-        res.status(400).json({ msg: "Novel details required." });
-    }
-
-    if (!req.file) {
-        return res.status(404).send("No file were uploaded. ");
-    }
-
-    const authors = readFile(authorsFilePath);
-
-    let author = null;
-    for (let i = 0; i < authors.length; i++) {
-        if (authors[i].userId === userId) {
-            author = authors[i];
-            break;
+    try {
+        const novels = readFile(novelsFilePath);
+        const { title, description, authorId } = req.body;
+        let introVideo = req.body.introVideo; // For YouTube URL
+        
+        if (!title || !description || !authorId) {
+            return res.status(400).json({ msg: "Please provide all required fields" });
         }
+
+        // Handle video upload or YouTube URL
+        if (req.files && req.files.introVideo) {
+            // If a video file was uploaded
+            introVideo = `/introduction-videos/${req.files.introVideo[0].filename}`;
+        } else if (!introVideo) {
+            introVideo = null;
+        } else if (introVideo && !introVideo.includes('youtube.com/embed')) {
+            const videoId = extractYouTubeVideoId(introVideo);
+            if (videoId) {
+                introVideo = `https://www.youtube.com/embed/${videoId}`;
+            }
+        }
+
+        const newNovel = {
+            id: uuidv4(),
+            title,
+            description,
+            coverPhoto: req.files && req.files.coverPhoto ? req.files.coverPhoto[0].filename : null,
+            introVideo,
+            timestamp: new Date().toLocaleString(),
+            likes: 0,
+            reviews: [],
+            chapters: [],
+            authorId
+        };
+
+        novels.push(newNovel);
+        writeFile(novelsFilePath, novels);
+
+        res.status(201).json(newNovel);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Error uploading novel" });
     }
+};
 
-    if (!author) {
-        return res.status(404).json({ msg: "Author not found" });
+// Helper function to extract YouTube video ID
+const extractYouTubeVideoId = (url) => {
+    const patterns = [
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
+        /(?:https?:\/\/)?youtu\.be\/([^?]+)/
+    ];
+
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) return match[1];
     }
-
-    const newNovel = {
-        id: uuidv4(),
-        title,
-        description,
-        coverPhoto: req.file.filename,
-        timestamp: new Date().toLocaleString(),
-        likes: 0,
-        introVideo: introVideo,
-        reviews: [],
-        chapters: [],
-        authorId: author.id
-    };
-    console.log("here")
-    const novels = readFile(novelsFilePath);
-    novels.push(newNovel);
-    writeFile(novelsFilePath, novels);
-
-    author.novels = author.novels || [];
-    author.novels.push(newNovel.id);
-    writeFile(authorsFilePath, authors);
-
-    return res.status(201).json({ msg: "Novel uploaded", novel: newNovel });
+    return null;
 };
 
 
@@ -283,6 +295,95 @@ const getReviewsById = (req, res) => {
     }
 }
 
+const searchNovels = (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q) {
+            return res.status(400).json({ msg: "Search query is required" });
+        }
+
+        const novels = readFile(novelsFilePath);
+        const authors = readFile(authorsFilePath);
+
+        // Case-insensitive search in title, description, and author name
+        const results = novels.filter(novel => {
+            if (!novel) return false;
+            
+            const author = authors.find(a => a && a.id === novel.authorId);
+            const searchTerm = q.toLowerCase();
+            
+            return (
+                (novel.title && novel.title.toLowerCase().includes(searchTerm)) ||
+                (novel.description && novel.description.toLowerCase().includes(searchTerm)) ||
+                (author && author.name && author.name.toLowerCase().includes(searchTerm))
+            );
+        }).map(novel => {
+            const author = authors.find(a => a && a.id === novel.authorId) || { id: 'unknown', name: 'Unknown Author' };
+            return {
+                ...novel,
+                author: {
+                    id: author.id,
+                    name: author.name
+                }
+            };
+        });
+
+        res.json(results);
+    } catch (error) {
+        console.error('Search error:', error);
+        res.status(500).json({ msg: "Error searching novels" });
+    }
+};
+
+const getChapterById = (req, res) => {
+    const { novelId, chapterId } = req.params;
+
+    const chapters = readFile(chaptersFilePath);
+    
+    const chapter = chapters.find(chapter => chapter.novelId === novelId && chapter.id === chapterId);
+
+    if (!chapter) {
+        return res.status(404).json({ msg: "Chapter not found" });
+    }
+
+    return res.status(200).json(chapter);
+};
+
+const getTopNovels = (req, res) => {
+    try {
+        const novels = readFile(novelsFilePath);
+        
+        // Sorting novels by likes
+        const topNovels = novels.sort((a, b) => b.likes - a.likes).slice(0, 5); // Get top 5 novels
+        
+        res.status(200).json(topNovels);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const sortNovels = (req, res) => {
+    try {
+        const novels = readFile(novelsFilePath);
+        const sortBy = req.query.sortBy || 'likes';  // Default to 'likes'
+
+        const sortedNovels = novels.sort((a, b) => {
+            if (sortBy === 'likes') {
+                return b.likes - a.likes; // Sort by likes in descending order
+            } else if (sortBy === 'timestamp') {
+                return new Date(b.timestamp) - new Date(a.timestamp); // Sort by timestamp in descending order
+            }
+            return 0; // Default return if no valid sort parameter
+        });
+
+        res.status(200).json(sortedNovels);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     uploadNovel,
     getNovels,
@@ -294,5 +395,9 @@ module.exports = {
     addReplyToReview,
     getReviews,
     getReviewsByNovelId,
-    getReviewsById
-}
+    getReviewsById,
+    searchNovels,
+    getChapterById,
+    getTopNovels,
+    sortNovels
+};

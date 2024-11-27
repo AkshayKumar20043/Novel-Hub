@@ -2,7 +2,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require("jsonwebtoken");
-const secret_key = "heyAnneshuITSmyJWTapplication"
+const secret_key = process.env.jwt_secret
 
 const { writeFile, readFile } = require('../models/info');
 const usersFilePath = path.join(__dirname, '..', 'data', 'users.json');
@@ -50,28 +50,29 @@ const loginUser = (req, res) => {
                     // Generate JWT
                     const token = jwt.sign({ userId: users[i].id }, secret_key, {expiresIn: '1d'});
                     res.cookie("token", token)
-                    res.status(200).json({
+                    return res.status(200).json({
                         msg: "Login successful...",
                         token: token
                     });
                     // console.log(token);
     
                 } else {
-                    res.status(400).json({
+                    return res.status(400).json({
                         msg: "Incorrect password..."
                     });
                 }
             }
         }
-    } catch(error) {
-        res.status(400).json({
+        return res.status(400).json({
             msg: "Email don't exist..."
         });
+    } catch(error) {
+        res.status(500).json({ message: error.message });
     }
 }
 
 const logoutUser = (req, res) => {
-    res.status(200).cookie("token",  "").json({
+    return res.status(200).cookie("token",  "").json({
         msg: "Logout successful..."
     });
 };

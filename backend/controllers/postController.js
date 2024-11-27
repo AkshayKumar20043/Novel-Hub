@@ -94,7 +94,8 @@ const addCommentToPost = (req, res) => {
     res.status(201).json(comment);
 };
 
-const getCommentsByPost = (postId) => {
+const getCommentsByPost = (req, res) => {
+    const {postId} = req.body;
     const comments = readFile(commentsFilePath);
     const commentsByPost = [];
     for (let i = 0; i < comments.length; i++) {
@@ -102,7 +103,10 @@ const getCommentsByPost = (postId) => {
             commentsByPost.push(comments[i]);
         }
     }
-    return commentsByPost;
+    if (commentsByPost.length > 0) {
+        return res.status(200).json(commentsByPost);
+    }
+    return res.status(404).send("No comments to Post")
 }
 
 const getPostById = (req, res) => {
