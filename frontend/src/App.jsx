@@ -1,15 +1,18 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './components/LoginPage';
-import SignupPage from './components/SignUpPage';
-import HomePage from './components/HomePage';
-import BookDetails from "./components/BookDetails";
-import ReviewDetails from "./components/ReviewDetails";
+import Chatbot from "./components/Chatbot";
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignUpPage';
+import HomePage from './pages/HomePage';
+import BookDetails from "./pages/BookDetails";
+import ReviewDetails from "./pages/ReviewDetails";
 import SearchResults from "./pages/SearchResults";
 import AuthContext from "./context/AuthContext";
-import Chatbot from "./components/Chatbot";
-import Chapters from "./components/Chapters"; // Import the Chapters component
-import ChapterDetail from "./components/ChapterDetail";
+import Chapters from "./pages/Chapters"; // Import the Chapters component
+import ChapterDetail from "./pages/ChapterDetail";
+import Dashboard from "./pages/Dashboard";
+import Rankings from "./pages/Rankings";
+import Forum from "./pages/Forum";
 
 const App = () => {
   const { isAuthenticated } = useContext(AuthContext);
@@ -23,6 +26,9 @@ const App = () => {
           <Route path="/novels/:id/chapters" element={<Chapters />} />
           <Route path="/novels/:novelId/chapters/:chapterId" element={<ChapterDetail />} /> 
           <Route path="/search" element={<SearchResults />} />
+          <Route path="/profile" element={<Dashboard />} />
+          <Route path="/rankings" element={<Rankings />} />
+          <Route path="/forum" element={<Forum />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       ) : (

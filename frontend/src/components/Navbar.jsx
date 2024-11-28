@@ -72,7 +72,7 @@ const Navbar = () => {
       <div className="flex felx-wrap justify-between items-center text-black py-4 px-6 md:px-32 gap-20 ">
         <a href="/" className="w-30 h-11 flex items-center justify-center text-center">
           <span className="text-xl font-bold text-gray-500 hover:scale-105 transition-all">
-            Novel Hub
+            NovelHub
           </span>
         </a>
 
@@ -81,7 +81,7 @@ const Navbar = () => {
             <i className="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-2xl text-gray-500"></i>
             <input
               type="text"
-              placeholder="Search novels, authors, genres..."
+              placeholder="Search novels..."
               className="py-2 pl-10 pr-4 rounded-1xl border-2 border-[#01A8FF] focus:bg-slate-100 focus:outline-[#01A8FF] w-80 transition-all"
               value={searchQuery}
               onChange={(e) => {
@@ -137,6 +137,22 @@ const Navbar = () => {
         </form>
 
         <div className="md:flex items-center gap-6 font-semibold text-base">
+          <div>
+            <button
+              className="p-1 hover:bg-sky-400 hover:text-white rounded-1xl transition-all cursor-pointer"
+              onClick={() => navigate("/rankings")}
+            >
+              Rankings
+            </button>
+          </div>
+          <div>
+            <button
+              className="p-1 hover:bg-sky-400 hover:text-white rounded-1xl transition-all cursor-pointer"
+              onClick={() => navigate("/forum")}
+            >
+              Forum
+            </button>
+          </div>
           <div>
             <button
               className="p-1 hover:bg-sky-400 hover:text-white rounded-1xl transition-all cursor-pointer"

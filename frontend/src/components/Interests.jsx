@@ -1,4 +1,3 @@
-import React from 'react';
 import WeeklyBest from './WeeklyBest';
 import Forum from './Forum';
 

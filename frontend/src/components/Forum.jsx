@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Post from '../utils/Post';
 
@@ -23,7 +23,7 @@ function Forum() {
         };
 
         fetchPosts();
-    }, []);
+    }, [API_URL]);
 
      const getRandomPosts = (posts, num) => {
         const shuffled = posts.sort(() => 0.5 - Math.random());
