@@ -18,7 +18,7 @@ novelRouter.get('/top', novelController.getTopNovels);
 novelRouter.get('/:novelId/chapters/:chapterId', novelController.getChapterById);
 
 // POST routes with file uploads
-novelRouter.post('/', isLoggedIn, upload.fields([
+novelRouter.post('/', upload.fields([
     { name: 'coverPhoto', maxCount: 1 },
     { name: 'introVideo', maxCount: 1 }
 ]), novelController.uploadNovel);
@@ -26,5 +26,10 @@ novelRouter.post('/', isLoggedIn, upload.fields([
 novelRouter.post('/:novelId/chapters', isLoggedIn, novelController.uploadChapter);
 novelRouter.post('/:novelId/reviews', isLoggedIn, novelController.uploadReview);
 novelRouter.post('/:novelId/reviews/:reviewId', novelController.addReplyToReview);
+
+novelRouter.post('/:novelId/toggle-like', novelController.toggleLike);
+novelRouter.post('/:novelId/reviews/:reviewId/toggle-like', novelController.toggleReviewLike);
+novelRouter.post('/:novelId/reviews/:reviewId/comments/:commentId/toggle-like', novelController.toggleCommentLike);
+
 
 module.exports = novelRouter;

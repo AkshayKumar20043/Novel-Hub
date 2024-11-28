@@ -9,6 +9,7 @@ const applyForAuthor = (req, res) => {
     const { userId, penName, bio } = req.body;
 
     if (!userId || !penName || !bio) {
+        console.log("here")
         res.status(400).json({ msg: "Pen name and bio are required." });
     }
 
@@ -64,10 +65,23 @@ const getAuthorById = (req, res) => {
     }
 };
 
+const getAuthorByUserId = (req, res) => {
+    const { userId } = req.params;
+    const authors = readFile(authorsFilePath);
+    const author = authors.find((auth) => auth.userId === userId);
+
+    if (!author) {
+        return res.status(404).json({ msg: "Author not found" });
+    }
+
+    res.status(200).json(author);
+}
+
 module.exports = {
     applyForAuthor,
     getAuthors,
     getAuthorById,
+    getAuthorByUserId
 };
 
 

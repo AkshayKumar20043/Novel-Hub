@@ -28,7 +28,7 @@ const googleAuthController = async (req, res) => {
       // If the user doesn't exist, create a new one
       const newUser = {
         id: uuidv4(),
-        name,  // Store the user's name
+        name,
         email,
         password: sub,  // Store Google sub as a unique identifier
         role: 'user',

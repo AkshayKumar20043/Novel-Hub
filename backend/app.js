@@ -7,6 +7,7 @@ const cors = require('cors');
 app.use(cors());
 const path = require('path');
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
+app.use('/introduction-videos', express.static(path.join(__dirname, 'public', 'introduction-videos')));
 
 require('dotenv').config();
 

@@ -20,25 +20,21 @@ if (!fs.existsSync(videoPath)) {
     fs.mkdirSync(videoPath, { recursive: true });
 }
 
-// File filter function
 const fileFilter = (req, file, cb) => {
     if (file.fieldname === 'coverPhoto') {
-        // Allow only image files for cover photos
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);
         } else {
             cb(new Error('Only image files are allowed for cover photos!'), false);
         }
     } else if (file.fieldname === 'introVideo') {
-        // Allow video files and check size
         const allowedMimeTypes = ['video/mp4', 'video/webm', 'video/ogg'];
         if (allowedMimeTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
             cb(new Error('Invalid video format! Please upload MP4, WebM, or OGG video.'), false);
         }
-    } else if (file.fieldname === 'posts') {
-        // Allow images for posts
+    } else if (file.fieldname === 'image') {
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);
         } else {
@@ -56,7 +52,7 @@ const storage = multer.diskStorage({
             cb(null, coverPhotoPath);
         } else if (file.fieldname === 'introVideo') {
             cb(null, videoPath);
-        } else if (file.fieldname === 'posts') {
+        } else if (file.fieldname === 'image') {
             cb(null, otherFilesPath);
         } else {
             cb(null, otherFilesPath);

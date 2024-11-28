@@ -52,7 +52,8 @@ const loginUser = (req, res) => {
                     res.cookie("token", token)
                     return res.status(200).json({
                         msg: "Login successful...",
-                        token: token
+                        token: token,
+                        userId: users[i].id
                     });
                     // console.log(token);
     

@@ -12,7 +12,7 @@ const addPosts = (req, res) => {
     if (!title || !content || !userId) {
         return res.status(400).send("Bad request...");
     }
-
+    
     if (!req.file) {
         return res.status(404).send("No file were uploaded. ");
     }
@@ -128,9 +128,22 @@ const getPostById = (req, res) => {
     }
 };
 
+const getPostByUserId = (req, res) => {
+    const { userId } = req.params;
+    const posts = readFile(postsFilePath);
+    const postsByUser = posts.filter((post) => post.userId === userId);
+
+    if (postsByUser.length > 0) {
+        res.status(200).json(postsByUser);
+    } else {
+        res.status(404).send("No post found...");
+    }
+}
+
 module.exports = {
     addPosts,
     getAllPosts,
     addCommentToPost,
     getPostById,
+    getPostByUserId
 };

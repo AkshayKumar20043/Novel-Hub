@@ -7,9 +7,10 @@ const upload = require('../middlewares/multer');
 // GET routes
 postRouter.get('/', postController.getAllPosts);
 postRouter.get('/:id', postController.getPostById);
+postRouter.get('/user/:userId', postController.getPostByUserId);
 
 // POST routes
-postRouter.post('/', isLoggedIn, upload.single('posts'), postController.addPosts);
+postRouter.post('/', upload.single('image'), postController.addPosts);
 postRouter.post('/:postId/comments', isLoggedIn, postController.addCommentToPost);
 
 module.exports = postRouter;

@@ -11,17 +11,30 @@ const reviewsFilePath = path.join(__dirname, '..', 'data', 'reviews.json');
 const uploadNovel = (req, res) => {
     try {
         const novels = readFile(novelsFilePath);
+
         const { title, description, authorId } = req.body;
         let introVideo = req.body.introVideo; // For YouTube URL
-        
+
         if (!title || !description || !authorId) {
             return res.status(400).json({ msg: "Please provide all required fields" });
+        }
+        const authors = readFile(authorsFilePath);
+        let author = null;
+        for (let i = 0; i < authors.length; i++) {
+            if (authors[i].userId === authorId) {
+                author = authors[i];
+                break;
+            }
+        }
+
+        if (!author) {
+            return res.status(404).json({ msg: "Author not found" });
         }
 
         // Handle video upload or YouTube URL
         if (req.files && req.files.introVideo) {
             // If a video file was uploaded
-            introVideo = `/introduction-videos/${req.files.introVideo[0].filename}`;
+            introVideo = req.files.introVideo[0].filename;
         } else if (!introVideo) {
             introVideo = null;
         } else if (introVideo && !introVideo.includes('youtube.com/embed')) {
@@ -41,11 +54,15 @@ const uploadNovel = (req, res) => {
             likes: 0,
             reviews: [],
             chapters: [],
-            authorId
+            authorId: author.id
         };
 
         novels.push(newNovel);
         writeFile(novelsFilePath, novels);
+
+        author.novels = author.novels || [];
+        author.novels.push(newNovel.id);
+        writeFile(authorsFilePath, authors);
 
         res.status(201).json(newNovel);
     } catch (error) {
@@ -304,14 +321,12 @@ const searchNovels = (req, res) => {
 
         const novels = readFile(novelsFilePath);
         const authors = readFile(authorsFilePath);
-
-        // Case-insensitive search in title, description, and author name
         const results = novels.filter(novel => {
             if (!novel) return false;
-            
+
             const author = authors.find(a => a && a.id === novel.authorId);
             const searchTerm = q.toLowerCase();
-            
+
             return (
                 (novel.title && novel.title.toLowerCase().includes(searchTerm)) ||
                 (novel.description && novel.description.toLowerCase().includes(searchTerm)) ||
@@ -339,7 +354,7 @@ const getChapterById = (req, res) => {
     const { novelId, chapterId } = req.params;
 
     const chapters = readFile(chaptersFilePath);
-    
+
     const chapter = chapters.find(chapter => chapter.novelId === novelId && chapter.id === chapterId);
 
     if (!chapter) {
@@ -352,10 +367,8 @@ const getChapterById = (req, res) => {
 const getTopNovels = (req, res) => {
     try {
         const novels = readFile(novelsFilePath);
-        
-        // Sorting novels by likes
         const topNovels = novels.sort((a, b) => b.likes - a.likes).slice(0, 5); // Get top 5 novels
-        
+
         res.status(200).json(topNovels);
     } catch (error) {
         console.error(error);
@@ -366,15 +379,15 @@ const getTopNovels = (req, res) => {
 const sortNovels = (req, res) => {
     try {
         const novels = readFile(novelsFilePath);
-        const sortBy = req.query.sortBy || 'likes';  // Default to 'likes'
+        const sortBy = req.query.sortBy || 'likes';
 
         const sortedNovels = novels.sort((a, b) => {
             if (sortBy === 'likes') {
-                return b.likes - a.likes; // Sort by likes in descending order
+                return b.likes - a.likes;
             } else if (sortBy === 'timestamp') {
                 return new Date(b.timestamp) - new Date(a.timestamp); // Sort by timestamp in descending order
             }
-            return 0; // Default return if no valid sort parameter
+            return 0;
         });
 
         res.status(200).json(sortedNovels);
@@ -383,6 +396,128 @@ const sortNovels = (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+const toggleLike = (req, res) => {
+    console.log(req.user)
+    const { novelId, userId } = req.body;
+    if (!novelId || !userId) {
+        return res.status(400).json({ msg: "Novel ID and User ID are required." });
+    }
+    const novels = readFile(novelsFilePath);
+    const users = readFile(usersFilePath);
+
+    const novel = novels.find(n => n.id === novelId);
+    if (!novel) {
+        return res.status(404).json({ msg: "Novel not found." });
+    }
+
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+        return res.status(404).json({ msg: "User not found." });
+    }
+    if (!user.likedNovels) {
+        user.likedNovels = [];
+    }
+
+    const likeIndex = user.likedNovels.indexOf(novelId);
+    if (likeIndex === -1) {
+        user.likedNovels.push(novelId);
+        novel.likes++;
+    } else {
+        user.likedNovels.splice(likeIndex, 1);
+        novel.likes--;
+    }
+    writeFile(novelsFilePath, novels);
+    writeFile(usersFilePath, users);
+
+    res.json({
+        likes: novel.likes,
+        isLiked: likeIndex === -1
+    });
+};
+
+const toggleCommentLike = (req, res) => {
+    try {
+        const { novelId, reviewId, commentId } = req.params;
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+
+        const reviews = readFile(reviewsFilePath);
+        const review = reviews.find(r => r.id === reviewId && r.novelId === novelId);
+
+        if (!review) {
+            return res.status(404).json({ message: "Review not found" });
+        }
+        if (!review.replies) {
+            review.replies = [];
+        }
+        const reply = review.replies.find(r => r.id === commentId);
+        if (!reply) {
+            return res.status(404).json({ message: "Comment not found" });
+        }
+        if (!reply.likes) {
+            reply.likes = [];
+        }
+        const userLikeIndex = reply.likes.indexOf(userId);
+        if (userLikeIndex === -1) {
+            reply.likes.push(userId);
+        } else {
+            reply.likes.splice(userLikeIndex, 1);
+        }
+        writeFile(reviewsFilePath, reviews);
+
+        return res.status(200).json({
+            message: userLikeIndex === -1 ? "Comment liked" : "Comment unliked",
+            likes: reply.likes.length,
+            likedBy: reply.likes
+        });
+    } catch (error) {
+        console.error('Error toggling comment like:', error);
+        return res.status(500).json({ message: "Error toggling comment like" });
+    }
+};
+
+const toggleReviewLike = (req, res) => {
+    try {
+        const { novelId, reviewId } = req.params;
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+
+        const reviews = readFile(reviewsFilePath);
+        const review = reviews.find(r => r.id === reviewId && r.novelId === novelId);
+
+        if (!review) {
+            return res.status(404).json({ message: "Review not found" });
+        }
+        if (!review.likes) {
+            review.likes = [];
+        }
+
+        const userLikeIndex = review.likes.indexOf(userId);
+        if (userLikeIndex === -1) {
+            review.likes.push(userId);
+        } else {
+            review.likes.splice(userLikeIndex, 1);
+        }
+
+        writeFile(reviewsFilePath, reviews);
+        return res.status(200).json({
+            message: userLikeIndex === -1 ? "Review liked" : "Review unliked",
+            likes: review.likes.length,
+            likedBy: review.likes
+        });
+    } catch (error) {
+        console.error('Error toggling review like:', error);
+        return res.status(500).json({ message: "Error toggling review like" });
+    }
+};
+
 
 module.exports = {
     uploadNovel,
@@ -399,5 +534,8 @@ module.exports = {
     searchNovels,
     getChapterById,
     getTopNovels,
-    sortNovels
+    sortNovels,
+    toggleLike,
+    toggleReviewLike,
+    toggleCommentLike
 };
