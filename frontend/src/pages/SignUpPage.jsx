@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import coverImage from "../assets/login_signup_cover1.webp";
 import GoogleSignIn from "../utils/GoogleSignIn";
-import "../../css/SignUp.css";
+import "../styles/SignUp.css";
 import DarkModeContext from "../context/DarkModeContext";
 import LoadingScreen from "../utils/LoadingScreen";
 
