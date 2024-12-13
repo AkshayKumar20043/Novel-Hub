@@ -1,6 +1,6 @@
 const express = require('express');
 const chatRouter = express.Router();
-const chatUtils = require('../utils/chatBot');
+const chatController = require('../controllers/chatBotController');
 const isLoggedIn = require('../authentication/authentication');
 
 chatRouter.post('/query', chatUtils.askChatbot);
