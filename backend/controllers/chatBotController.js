@@ -1,4 +1,4 @@
-const { getChatResponse } = require('./geminiChatBot');
+const { getChatResponse } = require('../utils/geminiChatBot');
 
 const askChatbot = async (req, res) => {
     const { message } = req.body;
