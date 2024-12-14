@@ -7,7 +7,7 @@ import { FaVolumeUp, FaVolumeMute, FaArrowLeft, FaArrowRight, FaBook, FaBookRead
 import DarkModeContext from "../context/DarkModeContext";
 import LoadingScreen from "../utils/LoadingScreen";
 import Cookies from 'js-cookie';
-
+import Footer from "../utils/Footer";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const ChapterDetail = () => {
@@ -269,6 +269,7 @@ const ChapterDetail = () => {
           </div>
         </motion.div>
       </motion.div>
+      <Footer/>
     </div>
   );
 };

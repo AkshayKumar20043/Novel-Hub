@@ -7,6 +7,7 @@ import { FaBook, FaBookOpen } from 'react-icons/fa';
 import DarkModeContext from '../context/DarkModeContext';
 import LoadingScreen from '../utils/LoadingScreen';
 import Cookies from 'js-cookie';
+import Footer from '../utils/Footer';
 
 const Chapters = () => {
     const { id } = useParams();
@@ -158,6 +159,7 @@ const Chapters = () => {
                     )}
                 </AnimatePresence>
             </div>
+            <Footer/>
         </div>
     );
 };

@@ -9,10 +9,27 @@ const DisplayBooks = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [visibleRows, setVisibleRows] = useState(2);
-  const booksPerRow = 5;
-  const [scrollPosition, setScrollPosition] = useState(0);
-
   const API_URL = import.meta.env.VITE_API_URL;
+
+  // Responsive grid settings
+  const getGridSettings = () => {
+    if (window.innerWidth >= 1280) return { booksPerRow: 5, gap: 'gap-8' }; // xl
+    if (window.innerWidth >= 1024) return { booksPerRow: 4, gap: 'gap-6' }; // lg
+    if (window.innerWidth >= 768) return { booksPerRow: 3, gap: 'gap-4' }; // md
+    if (window.innerWidth >= 640) return { booksPerRow: 2, gap: 'gap-4' }; // sm
+    return { booksPerRow: 1, gap: 'gap-4' }; // xs
+  };
+
+  const [gridSettings, setGridSettings] = useState(getGridSettings());
+
+  useEffect(() => {
+    const handleResize = () => {
+      setGridSettings(getGridSettings());
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchNovels = async () => {
@@ -35,6 +52,7 @@ const DisplayBooks = () => {
   };
 
   const getVisibleBooks = () => {
+    const { booksPerRow } = gridSettings;
     const visibleBooks = novels.slice(0, visibleRows * booksPerRow);
     const rows = [];
     
@@ -43,14 +61,6 @@ const DisplayBooks = () => {
     }
     
     return rows;
-  };
-
-  const scroll = (direction) => {
-    const container = document.querySelector('.scroll-container');
-    if (container) {
-      const scrollAmount = direction === 'left' ? -300 : 300;
-      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
   };
 
   if (loading) return (
@@ -66,13 +76,12 @@ const DisplayBooks = () => {
   );
 
   const rows = getVisibleBooks();
-  const hasMoreBooks = novels.length > visibleRows * booksPerRow;
+  const hasMoreBooks = novels.length > visibleRows * gridSettings.booksPerRow;
 
   return (
     <div className="space-y-8 py-8">
-      <AnimatePresence>
-        {/* Desktop View */}
-        <div className="hidden md:block">
+      <div className="hidden sm:block">
+        <AnimatePresence>
           {rows.map((row, rowIndex) => (
             <motion.div
               key={rowIndex}
@@ -80,14 +89,14 @@ const DisplayBooks = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5, delay: rowIndex * 0.1 }}
-              className="flex justify-center gap-20"
+              className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 ${gridSettings.gap} justify-items-center`}
             >
               {row.map((novel) => (
                 <motion.div
                   key={novel._id}
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.2 }}
-                  className="mt-10"
+                  className="w-full max-w-[250px] p-4"
                 >
                   <Book
                     _id={novel._id}
@@ -99,10 +108,25 @@ const DisplayBooks = () => {
               ))}
             </motion.div>
           ))}
-        </div>
-
-        {/* Mobile View with Horizontal Scroll */}
-        <div className="md:hidden relative">
+        </AnimatePresence>
+        
+        {hasMoreBooks && (
+          <motion.div
+            className="flex justify-center mt-8"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <button
+              onClick={loadMoreRows}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+            >
+              Explore More <FaChevronDown />
+            </button>
+          </motion.div>
+        )}
+      </div>
+      
+      <div className="md:hidden relative">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10">
             <button 
               onClick={() => scroll('left')}
@@ -122,7 +146,7 @@ const DisplayBooks = () => {
           </div>
 
           <div className="scroll-container overflow-x-auto flex gap-6 px-4 py-2 hide-scrollbar">
-            {novels.slice(0, visibleRows * booksPerRow).map((novel) => (
+            {novels.slice(0, visibleRows * gridSettings.booksPerRow).map((novel) => (
               <motion.div
                 key={novel._id}
                 whileHover={{ scale: 1.05 }}
@@ -139,24 +163,6 @@ const DisplayBooks = () => {
             ))}
           </div>
         </div>
-      </AnimatePresence>
-
-      {hasMoreBooks && (
-        <motion.div
-          className="flex justify-center mt-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <button
-            onClick={loadMoreRows}
-            className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-black to-blue-900 text-white rounded-xl hover:shadow-lg transition-all duration-300"
-          >
-            <span>Explore More</span>
-            <FaChevronDown className="group-hover:translate-y-1 transition-transform duration-300" />
-          </button>
-        </motion.div>
-      )}
     </div>
   );
 };

@@ -19,20 +19,27 @@ function HomePage() {
   }, []);
 
   return (
-    <div className={`${isDarkMode ? "bg-black/100" : "bg-white"}`}>
+    <div className={`min-h-screen flex flex-col ${isDarkMode ? "bg-black/100" : "bg-white"}`}>
       {isLoading ? (
         <LoadingScreen />
       ) : (
         <>
           <Navbar />
-          <Interests />
-          <h1 className="flex justify-center py-5 text-6xl font-extrabold text-center md:text-left" style={{ color: isDarkMode ? "white" : "black" }}>
-            Trending Novels
-          </h1>
-          <div className="">
-            <DisplayBooks />
-          </div>
-          <Footer/>
+          <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="py-4 sm:py-6 lg:py-8">
+              <Interests />
+              <h1 
+                className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-center sm:text-left py-4 sm:py-6 lg:py-8 transition-colors duration-200"
+                style={{ color: isDarkMode ? "white" : "black" }}
+              >
+                Trending Novels
+              </h1>
+              <div className="w-full">
+                <DisplayBooks />
+              </div>
+            </div>
+          </main>
+          <Footer />
           <Chatbot />
         </>
       )}

@@ -32,13 +32,8 @@ const GoogleSignIn = () => {
           
           Cookies.set('userId', data.userId);
           
-          // Update auth context
           await update();
-          
-          // Show success message
           toast.success('Successfully signed in with Google!');
-          
-          // Navigate to home
           navigate('/home');
         } else {
           toast.error(data.msg || 'Login failed. Please try again.');
