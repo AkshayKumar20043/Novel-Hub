@@ -7,6 +7,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const secret_key = process.env.jwt_secret;
 
 const googleAuthController = async (req, res) => {
+  console.log(secret_key);
   try {
     const { token } = req.body;
     
