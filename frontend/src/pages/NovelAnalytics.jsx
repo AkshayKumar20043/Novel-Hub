@@ -69,10 +69,6 @@ const NovelAnalytics = () => {
     }
   };
 
-  if (!novel) {
-    return <div>Novel not found</div>;
-  }
-
   const stats = [
     {
       icon: <FaBookOpen className="text-2xl text-blue-500" />,
