@@ -69,6 +69,10 @@ const NovelAnalytics = () => {
     }
   };
 
+   if (isLoading) {
+    return <LoadingScreen />;
+  }
+  
   const stats = [
     {
       icon: <FaBookOpen className="text-2xl text-blue-500" />,
