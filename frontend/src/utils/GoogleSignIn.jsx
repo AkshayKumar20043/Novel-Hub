@@ -16,6 +16,7 @@ const GoogleSignIn = () => {
 
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (response) => {
+      console.log(response.access_token);
       try {
         setIsLoading(true);
         const { data } = await axios.post(`${API_URL}/oauth/google-login`, {
