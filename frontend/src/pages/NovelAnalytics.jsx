@@ -14,7 +14,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 const NovelAnalytics = () => {
   const { novelId } = useParams();
   const [novel, setNovel] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
 
   const [newChapter, setNewChapter] = useState({
@@ -40,10 +39,8 @@ const NovelAnalytics = () => {
     try {
       const response = await axios.get(`${API_URL}/novels/${novelId}`);
       setNovel(response.data);
-      setLoading(false);
     } catch (error) {
       console.error("Error fetching novel details:", error);
-      setLoading(false);
     }
   };
 
@@ -71,14 +68,6 @@ const NovelAnalytics = () => {
       alert("Failed to add chapter");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
 
   if (!novel) {
     return <div>Novel not found</div>;
