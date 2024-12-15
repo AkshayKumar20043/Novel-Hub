@@ -18,7 +18,6 @@
 - [Routes Overview](#routes-overview)
 - [AI Chatbot (Novik)](#ai-chatbot-novik)
 - [Contribution](#contribution)
-- [License](#license)
 
 ---
 
