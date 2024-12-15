@@ -108,7 +108,7 @@
 ## Usage
 
 ### Accessing the Application
-- Visit `http://localhost:3002` to access the app locally.
+- Visit `http://localhost:5173` to access the frontned and `http://localhost:3002` to access the backend locally.
 - Register or log in using Google or email/password.
 
 ### Navigating the Application
